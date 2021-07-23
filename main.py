@@ -286,17 +286,18 @@ def main() -> None:
     dispatcher.add_handler(PollAnswerHandler(receive_poll_answer))
 
     # Start the Bot
-    try:
-        updater.start_webhook(listen="0.0.0.0",
-                          port=int(PORT),
-                          url_path=TOKEN)
-    except:
-        # pls heroku no errors
-        updater.start_webhook(listen="0.0.0.0",
-                          port=int(80),
-                          url_path=TOKEN)
+    # try:
+    #     updater.start_webhook(listen="0.0.0.0",
+    #                       port=int(PORT),
+    #                       url_path=TOKEN)
+    # except:
+    #     # pls heroku no errors
+    #     updater.start_webhook(listen="0.0.0.0",
+    #                       port=int(80),
+    #                       url_path=TOKEN)
+    updater.start_polling()
 
-    updater.bot.setWebhook('https://bigbrainbear.herokuapp.com/' + TOKEN)
+    # updater.bot.setWebhook('https://bigbrainbear.herokuapp.com/' + TOKEN)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
