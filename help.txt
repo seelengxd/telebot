@@ -1,0 +1,9 @@
+
+
+
+*/help*  This is the page you're looking at\! Learn what commands this bot has to offer\.
+*/rank*  Check where you place on the leaderboard\!
+*/q*     Send a new question\!
+
+Admin only commands:
+/addq    Add a new question
