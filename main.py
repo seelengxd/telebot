@@ -9,7 +9,6 @@ from telegram import (
     Update,
     ForceReply,
     User,
-    parsemode
 )
 from telegram.ext import Updater, CommandHandler, MessageHandler, PollAnswerHandler, Filters, CallbackContext
 import sqlite3
@@ -287,9 +286,16 @@ def main() -> None:
     dispatcher.add_handler(PollAnswerHandler(receive_poll_answer))
 
     # Start the Bot
-    updater.start_webhook(listen="0.0.0.0",
+    try:
+        updater.start_webhook(listen="0.0.0.0",
                           port=int(PORT),
                           url_path=TOKEN)
+    except:
+        # pls heroku no errors
+        updater.start_webhook(listen="0.0.0.0",
+                          port=int(80),
+                          url_path=TOKEN)
+
     updater.bot.setWebhook('https://bigbrainbear.herokuapp.com/' + TOKEN)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
