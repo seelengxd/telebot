@@ -13,9 +13,7 @@ from telegram import (
 from telegram.ext import Updater, CommandHandler, MessageHandler, PollAnswerHandler, Filters, CallbackContext
 import sqlite3
 import os
-
-PORT = int(os.environ.get('PORT', 5000))
-logging.info(str(PORT))
+import functools
 
 # Enable logging
 logging.basicConfig(
@@ -29,19 +27,6 @@ def openDB(dbName):
     con = sqlite3.connect(dbName)
     # con.row_factory = sqlite3.Row
     return con
-
-def get_leaderboard2():
-    con = openDB('bigbrain.db')
-    cur = con.execute(
-        '''
-    SELECT TELE_ID, MAX(PTS) 
-    FROM PLAYERS
-    GROUP BY TELE_ID
-    ORDER BY PTS DESC
-    '''
-    ).fetchall()
-    con.close()
-    return cur
 
 def congrats(tele_id, id_list): 
     rank=0
@@ -112,6 +97,14 @@ def start(update: Update, context: CallbackContext) -> None:
         reply_markup=ForceReply(selective=True),
     )
 
+def group_only(func):
+    @functools.wraps(func)
+    def wrapper(update: Update, context: CallbackContext) -> None:
+        if update.message.chat_id < 0:
+            func(update, context)
+        else:
+            update.message.reply_text('Please use this command in a group.')
+    return wrapper
 
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
@@ -119,31 +112,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.bot.send_sticker(chat_id, STICKERS['bear_needs_help'])
     update.message.bot.send_message(chat_id, HELP_TEXT, parse_mode="MarkdownV2")
 
-def country_leaderboard(update: Update, context: CallbackContext) -> None:
-    players=get_leaderboard2()
-    id_only = [i[0] for i in players]
-    chat_id = update.message.chat_id
-    #get top 3 in the country
-    res=[]
-    # TELE_ID, MAX(PTS) 
-    for tele_id, pts in players:
-        name=update.message.bot.get_chat_member(chat_id, tele_id).user.full_name
-        # pts=i[3]
-        res.append((tele_id, name,pts))
-    
-    emojis = "🥇🥈🥉"
-    # message = "__👑*Leaderboard*__\n"
-    message = ""
-    for e, (_, name, pts) in zip(emojis, res):
-        message += f"{e} *{name}* {pts} pts\n"
-    update.message.bot.send_sticker(chat_id, STICKERS['leader_board'])
-    update.message.bot.send_message(chat_id, congrats(update.effective_user.id, id_only))
-    if message:
-        update.message.bot.send_message(chat_id, message, parse_mode="MarkdownV2")
-    else:
-        update.message.bot.send_message(chat_id, "No one played yet! Start playing now! 🐻")
-
-    
+@group_only
 def group_leaderboard(update: Update, context: CallbackContext) -> None:
     # print(update.effective_user.id)
     chat_id = update.message.chat_id
@@ -178,6 +147,7 @@ def group_leaderboard(update: Update, context: CallbackContext) -> None:
     else:
         update.message.bot.send_message(chat_id, "No one played yet! Start playing now! 🐻")
 
+@group_only
 def question(update: Update, context: CallbackContext) -> None:
     # update.message.reply_markdown_v2(
     #     "this is a test question", 
@@ -242,28 +212,15 @@ def receive_poll_answer(update: Update, context: CallbackContext) -> None:
         
         pass
 
-    # answer
-    # answer['user']['id'] <--- id
     # {'user': {'language_code': 'en', 'first_name': 'Chnn', 'username': 'chnn2', 'id': 266267665, 'is_bot': False}, 'option_ids': [0], 'poll_id': '6330144811999297563'}
 
     print(answer)
 
-def add_question(update: Update, context: CallbackContext) -> None:
-    chat_id = update.message.chat_id
-    chat_member = update.message.bot.get_chat_member(chat_id, update.effective_user.id)
-    if chat_member.status not in ['admin', 'creator']:
-        update.message.reply_text('This is an ADMIN ONLY command!')
-        return
-        
-    else:
-        pass
 
-    # bot.get_chat_administrators
+
+
     
     
-
-
-
 def main() -> None:
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
@@ -277,27 +234,10 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("rank", group_leaderboard))
     dispatcher.add_handler(CommandHandler("q", question))
-    dispatcher.add_handler(CommandHandler("add_q", add_question))
-    dispatcher.add_handler(CommandHandler("big_rank", country_leaderboard))
     dispatcher.add_handler(PollAnswerHandler(receive_poll_answer))
 
     # Start the Bot
-    # try:
-    #     updater.start_webhook(listen="0.0.0.0",
-    #                       port=int(PORT),
-    #                       url_path=TOKEN)
-    # except:
-    #     # pls heroku no errors
-    #     updater.start_webhook(listen="0.0.0.0",
-    #                       port=int(80),
-    #                       url_path=TOKEN)
     updater.start_polling()
-
-    # updater.bot.setWebhook('https://bigbrainbear.herokuapp.com/' + TOKEN)
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
