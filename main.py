@@ -35,7 +35,7 @@ def congrats(tele_id, id_list):
             rank += 1
         else:
             break
-    if rank==len(id_list)+1: #user not in leaderboard
+    if rank==len(id_list): #user not in leaderboard
         return('You are not on the leaderboard! Get up there by trying some of our questions!')
     else:
         rank+=1
@@ -82,11 +82,15 @@ STICKERS = {
 with open('help.txt') as f:
     HELP_TEXT = f.read()
 
+with open('about.txt') as f:
+    ABOUT = f.read()
+
 try:
     with open('TOKEN') as f:
         TOKEN = f.readline().strip()
 except:
     TOKEN = os.environ['TOKEN']
+
 # Define a few command handlers. These usually take the two arguments update and
 # context.
 def start(update: Update, context: CallbackContext) -> None:
@@ -112,9 +116,13 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.bot.send_sticker(chat_id, STICKERS['bear_needs_help'])
     update.message.bot.send_message(chat_id, HELP_TEXT, parse_mode="MarkdownV2")
 
+def about(update: Update, context: CallbackContext) -> None:
+    chat_id = update.message.chat_id
+    update.message.bot.send_sticker(chat_id, STICKERS['big_brain_bear'])
+    update.message.bot.send_message(chat_id, ABOUT, parse_mode="MarkdownV2")
+
 @group_only
 def group_leaderboard(update: Update, context: CallbackContext) -> None:
-    # print(update.effective_user.id)
     chat_id = update.message.chat_id
     players = get_leaderboard(chat_id)
     id_only = [i[0] for i in players]
@@ -149,10 +157,6 @@ def group_leaderboard(update: Update, context: CallbackContext) -> None:
 
 @group_only
 def question(update: Update, context: CallbackContext) -> None:
-    # update.message.reply_markdown_v2(
-    #     "this is a test question", 
-    #     reply_markup=ReplyKeyboardMarkup(['A', 'B', 'C', 'D'], one_time_keyboard=True)
-    # )
     subject, qn, choices, ans, pts, diff = get_question()
     pts = int(pts)
     choices = choices.split("|")
@@ -209,8 +213,7 @@ def receive_poll_answer(update: Update, context: CallbackContext) -> None:
         
         con.commit()
         con.close()
-        
-        pass
+    
 
     # {'user': {'language_code': 'en', 'first_name': 'Chnn', 'username': 'chnn2', 'id': 266267665, 'is_bot': False}, 'option_ids': [0], 'poll_id': '6330144811999297563'}
 
@@ -234,6 +237,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("rank", group_leaderboard))
     dispatcher.add_handler(CommandHandler("q", question))
+    dispatcher.add_handler(CommandHandler("about", about))
     dispatcher.add_handler(PollAnswerHandler(receive_poll_answer))
 
     # Start the Bot

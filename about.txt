@@ -1,0 +1,2 @@
+This is a telegram bot aimed to engage students via simple and fast revision\.
+Solving questions *\(/q\)*  will help you rise in the leaderboard *\(/rank\)*\.
