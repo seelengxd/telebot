@@ -19,10 +19,10 @@ https://t.me/verybigbrain_bot
 
 ### commands
 
-/about - Short description about the bot
-/help - Command list
-/q - Randomly selects one question and gives it to the group
-/rank - Leaderboard + your own rank in the group
+- /about - Short description about the bot
+- /help - Command list
+- /q - Randomly selects one question and gives it to the group
+- /rank - Leaderboard + your own rank in the group
 
 ## technical implementation
 - We are using *sqlite* as our database.
