@@ -30,10 +30,6 @@ def openDB(dbName):
     # con.row_factory = sqlite3.Row
     return con
 
-
-
-
-#ZICHENS EDITS HERE=================================   
 def get_leaderboard2():
     con = openDB('bigbrain.db')
     cur = con.execute(
@@ -46,7 +42,7 @@ def get_leaderboard2():
     ).fetchall()
     con.close()
     return cur
-#==========================================
+
 def congrats(tele_id, id_list): 
     rank=0
     for i in id_list:
